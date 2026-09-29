@@ -46,10 +46,8 @@ Axon anti-spoofing datasets will be used for liveness detection:
 
 The model will learn to classify an input as:
 
-```text
-LIVE  → Real person
-SPOOF → Printed photograph
-```
+  - LIVE  → Real person
+  - SPOOF → Printed photograph
 
 ### 3. Mock Kenyan IDs
 
@@ -59,7 +57,6 @@ The mock IDs will contain fictional information and will not be used to train th
 
 ## Proposed Workflow
 
-```text
              ID Image + Selfie
                     │
                     ▼
@@ -80,7 +77,6 @@ The mock IDs will contain fictional information and will not be used to train th
                     │
                     ▼
                  FastAPI
-```
 
 ## Models
 
