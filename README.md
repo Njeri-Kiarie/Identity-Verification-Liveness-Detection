@@ -55,29 +55,6 @@ Mock Kenyan IDs will be created using **Canva** for final testing and demonstrat
 
 The mock IDs will contain fictional information and will not be used to train the models.
 
-## Proposed Workflow
-
-             ID Image + Selfie
-                    │
-                    ▼
-            YOLO Face Detection
-              & Face Cropping
-                    │
-          ┌─────────┴─────────┐
-          ▼                   ▼
-   Face Verification     Liveness Detection
-    Match / No Match       Live / Spoof
-          │                   │
-          └─────────┬─────────┘
-                    ▼
-              OCR Extraction
-                    │
-                    ▼
-           Verification Result
-                    │
-                    ▼
-                 FastAPI
-
 ## Models
 
 ### YOLO – Face Detection
