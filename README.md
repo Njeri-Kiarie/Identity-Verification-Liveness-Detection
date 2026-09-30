@@ -4,83 +4,141 @@
 
 As financial services in Kenya become increasingly digital, there is a growing need for secure ways of verifying customer identities remotely.
 
-This project aims to develop a **Digital Know Your Customer (KYC) prototype** using computer vision and deep learning. The system will compare the photograph on an identification document with a user's selfie and perform a liveness check to determine whether a real person is present.
+This project aims to develop a **Digital KYC prototype** using computer vision and deep learning. The system will compare the face on an identification document with a customer's selfie and perform liveness detection to determine whether a real person is present.
+
+The system is designed as an identity-verification component that could be integrated into existing digital onboarding platforms used by banks, FinTech companies, digital lenders, SACCOs and other financial service providers.
 
 ## Problem Statement
 
-Digital customer onboarding can be vulnerable to identity fraud. A person may attempt to register using another person's identification document or present a printed photograph to the camera during verification.
+Remote customer onboarding can be vulnerable to identity fraud. For example, a person may attempt to register using another person's identification document or present a photograph instead of being physically present.
 
-Face matching alone may confirm that a face matches the ID without determining whether the actual person is physically present.
+Face matching alone may determine whether two facial images belong to the same person, but it does not confirm that a real person is present during verification.
 
-This project therefore combines **face detection, face verification, and liveness detection** to support a more secure digital identity verification process.
+This project therefore combines **face detection, face verification and liveness detection** to provide a more complete identity-verification process.
 
 ## Objectives
 
 - Detect and crop faces from ID documents and selfies using YOLO.
-- Compare the ID photograph with the user's selfie.
+- Compare the ID photograph with the customer's selfie.
 - Determine whether the two faces belong to the same person.
-- Detect whether a real person or printed photograph is presented to the camera.
+- Detect whether the selfie represents a live person or a spoof attempt.
 - Extract basic information from the ID using OCR.
-- Generate a final identity verification result.
-- Deploy the system using FastAPI.
+- Generate a final KYC verification result.
+- Deploy the verification pipeline using FastAPI.
 
 ## Datasets
 
 ### 1. Face Verification Dataset
 
-The project will use the **Axon Selfie and Official ID Photo Dataset** from Kaggle.
+The project will use the **Axon Selfie and Official ID Photo public dataset**.
 
-The dataset contains ID photographs and multiple selfies belonging to different individuals.
+The available sample contains:
 
-It will be used to train the face verification model to determine:
+- 10 different identities.
+- ID document photographs.
+- Current selfies captured under different conditions.
+- Archive selfies.
 
-- **Match** – ID photograph and selfie belong to the same person.
-- **No Match** – ID photograph and selfie belong to different people.
+Because the available dataset is small, it will **not be used to train a face-recognition model from scratch**. Instead, it will be used to create genuine and impostor face pairs for testing the face-verification pipeline.
+
+The verification classes will be:
+
+- **1 – Match:** ID photograph and selfie belong to the same person.
+- **0 – No Match:** ID photograph and selfie belong to different people.
 
 ### 2. Liveness Detection Dataset
 
-Axon anti-spoofing datasets will be used for liveness detection:
+The liveness component will use separate images representing:
 
-- **Real Dataset** – represents real people (**Live**).
-- **Photo Print Attack Dataset** – represents printed photographs presented to a camera (**Spoof**).
+- **Live:** A real person captured by a camera.
+- **Spoof:** A printed photograph presented to the camera.
 
-The model will learn to classify an input as:
-
-  - LIVE  → Real person
-  - SPOOF → Printed photograph
+These images will be used to train a binary image-classification model for liveness detection.
 
 ### 3. Mock Kenyan IDs
 
-Mock Kenyan IDs will be created using **Canva** for final testing and demonstration.
+Fictional Kenyan-style identification documents will be created for the final demonstration.
 
-The mock IDs will contain fictional information and will not be used to train the models.
+These IDs will contain fictional information and will be clearly marked as samples. They will only be used for testing and demonstrating the completed system.
+
+## Proposed Workflow
+
+```text
+ID Image                         Selfie
+    ↓                              ↓
+YOLO Face Detection          YOLO Face Detection
+    ↓                              ↓
+ID Face                         Selfie Face
+      \                           /
+       \                         /
+              ArcFace
+                 ↓
+          Face Embeddings
+                 ↓
+          Cosine Similarity
+                 ↓
+          Match / No Match
+
+
+Selfie
+   ↓
+Liveness Detection CNN
+   ↓
+Live / Spoof
+
+
+ID Image
+   ↓
+OCR
+   ↓
+Extract ID Information
+
+
+Face Verification + Liveness
+              ↓
+       Final KYC Decision
+              ↓
+    Verified / Not Verified
+```
 
 ## Models
 
-### YOLO – Face Detection
+### YOLO Face Detection
 
-A pretrained **YOLO face detector** will be used to locate and crop faces from the ID document and selfie before they are passed to the other models.
+A pretrained YOLO face-detection model will be used to locate and crop faces from ID photographs and selfies before face verification.
 
-### Siamese Neural Network – Face Verification
+### ArcFace Face Verification
 
-A **Siamese Neural Network** will be used to compare the face extracted from the ID with the user's selfie and determine whether they belong to the same person.
+A pretrained **ArcFace** model will generate numerical face embeddings for the ID photograph and selfie.
 
-### CNN – Liveness Detection
+The embeddings will be compared using similarity measurement to determine whether the two images belong to the same person.
 
-A **CNN-based model** will be trained to distinguish between:
+The output will be:
 
-- **Live** – a real person is present.
-- **Spoof** – a printed photograph is presented to the camera.
+- **Match**
+- **No Match**
+
+### Liveness Detection CNN
+
+A Convolutional Neural Network (CNN) will be trained to distinguish between:
+
+- **Live**
+- **Spoof**
+
+This helps prevent someone from passing verification simply by presenting a printed photograph of the correct person.
+
+### OCR
+
+Optical Character Recognition (OCR) will be used to extract basic text information from the identification document.
 
 ## Verification Decision
 
-A successful verification will require:
+The final verification decision will combine face verification and liveness detection.
 
 ```text
 Face Match = YES
-       +
 Liveness = LIVE
-       ↓
+        ↓
      VERIFIED
 ```
 
@@ -88,27 +146,26 @@ If the face does not match or a spoof is detected:
 
 ```text
 Face Match = NO
-       OR
+      OR
 Liveness = SPOOF
-       ↓
+        ↓
    NOT VERIFIED
 ```
 
-## Tools
+## Tools and Technologies
 
 - Python
-- PyTorch
-- YOLO
 - OpenCV
-- Siamese Neural Network
-- CNN
+- YOLO
+- ArcFace
+- Convolutional Neural Networks (CNN)
 - OCR
 - FastAPI
 - Canva
 
 ## Expected Outcome
 
-The final system will accept an identification document and a selfie and provide a result such as:
+The completed prototype will accept an ID image and selfie and produce a result similar to:
 
 ```text
 Face Detected: Yes
@@ -117,4 +174,4 @@ Liveness: Live
 Status: Verified
 ```
 
-The project will demonstrate how **computer vision and deep learning can support Digital KYC and identity verification in the Kenyan financial sector**.
+The project will demonstrate how computer vision and deep learning techniques can be combined to support Digital KYC identity verification in the Kenyan financial sector.
